@@ -75,6 +75,7 @@
     , centeredY: true   // Should we center the image on the Y axis?
     , duration: 5000    // Amount of time in between slides (if slideshow)
     , fade: 0           // Speed of fade transition between slides
+    , useObject: false           // Whether to use an Object tag or not.
   };
 
   /* STYLES
@@ -106,6 +107,17 @@
         , maxWidth: 'none'
         , zIndex: -999999
       }
+    , object: {
+          position: 'absolute'
+        , margin: 0
+        , padding: 0
+        , border: 'none'
+        , width: 'auto'
+        , height: 'auto'
+        , maxHeight: 'none'
+        , maxWidth: 'none'
+        , zIndex: -999999
+      }
   };
 
   /* CLASS DEFINITION
@@ -118,11 +130,14 @@
      * So, we need to turn this back into an array.
      */
     this.images = $.isArray(images) ? images : [images];
-
     // Preload images
+
+
     $.each(this.images, function () {
       $('<img />')[0].src = this;
-    });    
+    });     
+    
+   
 
     // Convenience reference to know if the container is body.
     this.isBody = container === document.body;
@@ -180,36 +195,80 @@
   /* PUBLIC METHODS
    * ========================= */
   Backstretch.prototype = {
+
+
+
       resize: function () {
-        try {
-          var bgCSS = {left: 0, top: 0}
-            , rootWidth = this.isBody ? this.$root.width() : this.$root.innerWidth()
-            , bgWidth = rootWidth
-            , rootHeight = this.isBody ? ( window.innerHeight ? window.innerHeight : this.$root.height() ) : this.$root.innerHeight()
-            , bgHeight = bgWidth / this.$img.data('ratio')
-            , bgOffset;
 
-            // Make adjustments based on image ratio
-            if (bgHeight >= rootHeight) {
-                bgOffset = (bgHeight - rootHeight) / 2;
-                if(this.options.centeredY) {
-                  bgCSS.top = '-' + bgOffset + 'px';
-                }
-            } else {
-                bgHeight = rootHeight;
-                bgWidth = bgHeight * this.$img.data('ratio');
-                bgOffset = (bgWidth - rootWidth) / 2;
-                if(this.options.centeredX) {
-                  bgCSS.left = '-' + bgOffset + 'px';
-                }
-            }
+          var element;
+          if(this.options.useObject) {
 
-            this.$wrap.css({width: rootWidth, height: rootHeight})
-                      .find('img:not(.deleteable)').css({width: bgWidth, height: bgHeight}).css(bgCSS);
-        } catch(err) {
-            // IE7 seems to trigger resize before the image is loaded.
-            // This try/catch block is a hack to let it fail gracefully.
-        }
+
+              try {
+                var bgCSS = {left: 0, top: 0}
+                  , rootWidth = this.isBody ? this.$root.width() : this.$root.innerWidth()
+                  , bgWidth = rootWidth
+                  , rootHeight = this.isBody ? ( window.innerHeight ? window.innerHeight : this.$root.height() ) : this.$root.innerHeight()
+                  , bgHeight = bgWidth / this.$img.data('ratio')
+                  , bgOffset;
+                 
+                  // Make adjustments based on image ratio
+                  if (bgHeight >= rootHeight) {
+                      bgOffset = (bgHeight - rootHeight) / 2;
+                      if(this.options.centeredY) {
+                        bgCSS.top = '-' + bgOffset + 'px';
+                      }
+                  } else {
+                      bgHeight = rootHeight;
+                      bgWidth = bgHeight * this.$img.data('ratio');
+                      bgOffset = (bgWidth - rootWidth) / 2;
+                      if(this.options.centeredX) {
+                        bgCSS.left = '-' + bgOffset + 'px';
+                      }
+                  }
+
+                  this.$wrap.css({width: rootWidth, height: rootHeight})
+                            .find('object:not(.deleteable)').css({width: bgWidth, height: bgHeight}).css(bgCSS);
+              } catch(err) {
+                  // IE7 seems to trigger resize before the image is loaded.
+                  // This try/catch block is a hack to let it fail gracefully.
+              }
+
+          } else {
+
+                  try {
+                    var bgCSS = {left: 0, top: 0}
+                      , rootWidth = this.isBody ? this.$root.width() : this.$root.innerWidth()
+                      , bgWidth = rootWidth
+                      , rootHeight = this.isBody ? ( window.innerHeight ? window.innerHeight : this.$root.height() ) : this.$root.innerHeight()
+                      , bgHeight = bgWidth / this.$img.data('ratio')
+                      , bgOffset;
+                    
+                      // Make adjustments based on image ratio
+                      if (bgHeight >= rootHeight) {
+                          bgOffset = (bgHeight - rootHeight) / 2;
+                          if(this.options.centeredY) {
+                            bgCSS.top = '-' + bgOffset + 'px';
+                          }
+                      } else {
+                          bgHeight = rootHeight;
+                          bgWidth = bgHeight * this.$img.data('ratio');
+                          bgOffset = (bgWidth - rootWidth) / 2;
+                          if(this.options.centeredX) {
+                            bgCSS.left = '-' + bgOffset + 'px';
+                          }
+                      }
+
+                      this.$wrap.css({width: rootWidth, height: rootHeight})
+                                .find('img:not(.deleteable)').css({width: bgWidth, height: bgHeight}).css(bgCSS);
+                  } catch(err) {
+                      // IE7 seems to trigger resize before the image is loaded.
+                      // This try/catch block is a hack to let it fail gracefully.
+                  }
+          }
+
+
+
 
         return this;
       }
@@ -223,8 +282,16 @@
         }
 
         // Vars
+
+        var element;
+        if(this.options.useObject) {
+          element = 'object';
+        } else {
+          element = 'img';
+        }
+
         var self = this
-          , oldImage = self.$wrap.find('img').addClass('deleteable')
+          , oldImage = self.$wrap.find(element).addClass('deleteable')
           , evtOptions = { relatedTarget: self.$container[0] };
 
         // Trigger the "before" event
@@ -236,40 +303,82 @@
         // Pause the slideshow
         clearInterval(self.interval);
 
-        // New image
-        self.$img = $('<img />')
-                      .css(styles.img)
-                      .bind('load', function (e) {
-                        var imgWidth = this.width || $(e.target).width()
-                          , imgHeight = this.height || $(e.target).height();
-                        
-                        // Save the ratio
-                        $(this).data('ratio', imgWidth / imgHeight);
+        if(this.options.useObject) {
 
-                        // Show the image, then delete the old one
-                        // "speed" option has been deprecated, but we want backwards compatibilty
-                        $(this).fadeIn(self.options.speed || self.options.fade, function () {
-                          oldImage.remove();
+          // New image
+          self.$img = $('<object />')
+                .css(styles.object)
+                .bind('load', function (e) {
+                  var imgWidth = this.width || $(e.target).width()
+                    , imgHeight = this.height || $(e.target).height();
+                  
+                  // Save the ratio
+                  $(this).data('ratio', imgWidth / imgHeight);
 
-                          // Resume the slideshow
-                          if (!self.paused) {
-                            self.cycle();
-                          }
+                  // Show the image, then delete the old one
+                  // "speed" option has been deprecated, but we want backwards compatibilty
+                  $(this).fadeIn(self.options.speed || self.options.fade, function () {
+                    oldImage.remove();
 
-                          // Trigger the "after" and "show" events
-                          // "show" is being deprecated
-                          $(['after', 'show']).each(function () {
-                            self.$container.trigger($.Event('backstretch.' + this, evtOptions), [self, newIndex]);
-                          });
-                        });
+                    // Resume the slideshow
+                    if (!self.paused) {
+                      self.cycle();
+                    }
 
-                        // Resize
-                        self.resize();
-                      })
-                      .appendTo(self.$wrap);
+                    // Trigger the "after" and "show" events
+                    // "show" is being deprecated
+                    $(['after', 'show']).each(function () {
+                      self.$container.trigger($.Event('backstretch.' + this, evtOptions), [self, newIndex]);
+                    });
+                  });
 
-        // Hack for IE img onload event
-        self.$img.attr('src', self.images[newIndex]);
+                  // Resize
+                  self.resize();
+                })
+                .appendTo(self.$wrap);
+
+        } else {
+
+          // New image
+          self.$img = $('<img />')
+              .css(styles.img)
+              .bind('load', function (e) {
+                var imgWidth = this.width || $(e.target).width()
+                  , imgHeight = this.height || $(e.target).height();
+                
+                // Save the ratio
+                $(this).data('ratio', imgWidth / imgHeight);
+
+                // Show the image, then delete the old one
+                // "speed" option has been deprecated, but we want backwards compatibilty
+                $(this).fadeIn(self.options.speed || self.options.fade, function () {
+                  oldImage.remove();
+
+                  // Resume the slideshow
+                  if (!self.paused) {
+                    self.cycle();
+                  }
+
+                  // Trigger the "after" and "show" events
+                  // "show" is being deprecated
+                  $(['after', 'show']).each(function () {
+                    self.$container.trigger($.Event('backstretch.' + this, evtOptions), [self, newIndex]);
+                  });
+                });
+
+                // Resize
+                self.resize();
+              })
+              .appendTo(self.$wrap);
+        }
+
+        if(this.options.useObject) {
+          self.$img.attr('data', self.images[newIndex]);
+        } else {
+          // Hack for IE img onload event
+          self.$img.attr('src', self.images[newIndex]);
+        }
+
         return self;
       }
 

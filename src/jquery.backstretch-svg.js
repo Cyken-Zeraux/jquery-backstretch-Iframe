@@ -308,6 +308,7 @@
           // New image
           self.$img = $('<object />')
                 .css(styles.object)
+                .attr('type', 'image/svg+xml')
                 .bind('load', function (e) {
                   var imgWidth = this.width || $(e.target).width()
                     , imgHeight = this.height || $(e.target).height();

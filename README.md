@@ -43,7 +43,7 @@ Include the jQuery library (version 1.7 or newer) and Backstretch plugin files i
 ```javascript
 $.backstretch([
   'path/to/image.svg',
-], {useObject: true});
+], {fade: "slow", useSnap: true, iframe: true});
 ```
 
 

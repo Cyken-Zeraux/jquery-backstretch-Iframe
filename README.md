@@ -9,25 +9,6 @@ There are a couple of examples included with this package, or feel free to check
 
 Include the jQuery library (version 1.7 or newer) and Backstretch plugin files in your webpage (preferably at the bottom of the page, before the closing BODY tag):
 
-```html
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-<script src="jquery.backstretch.min.js"></script>
-<script>
-  // To attach Backstrech as the body's background
-  $.backstretch("path/to/image.jpg");
-
-  // You may also attach Backstretch to a block-level element
-  $(".foo").backstretch("path/to/image.jpg");
-
-  // Or, to start a slideshow, just pass in an array of images
-  $(".foo").backstretch([
-    "path/to/image.jpg",
-    "path/to/image2.jpg",
-    "path/to/image3.jpg"    
-  ], {duration: 4000});
-</script>
-```
-
 ## Options
 
 | Name | Description | Type | Default |

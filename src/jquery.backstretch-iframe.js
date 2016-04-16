@@ -75,6 +75,7 @@
     , centeredY: true   // Should we center the image on the Y axis?
     , duration: 5000    // Amount of time in between slides (if slideshow)
     , fade: 0           // Speed of fade transition between slides
+    , iframe: false
   };
 
   /* STYLES
@@ -119,11 +120,15 @@
      */
     this.images = $.isArray(images) ? images : [images];
 
-    // Preload images
-    $.each(this.images, function () {
-      $('<iframe />')[0].src = this;
-    });    
-
+    if(this.options.iframe == true) {
+      $.each(this.images, function () {
+        $('<iframe />')[0].src = this;
+      });   
+    } else {
+      $.each(this.images, function () {
+        $('<img />')[0].src = this;
+      });   
+    }
     // Convenience reference to know if the container is body.
     this.isBody = container === document.body;
 
@@ -204,8 +209,14 @@
                 }
             }
 
-            this.$wrap.css({width: rootWidth, height: rootHeight})
+            if(this.options.iframe == true) {
+              this.$wrap.css({width: rootWidth, height: rootHeight})
                       .find('iframe:not(.deleteable)').css({width: bgWidth, height: bgHeight}).css(bgCSS);
+            } else {
+              this.$wrap.css({width: rootWidth, height: rootHeight})
+                      .find('img:not(.deleteable)').css({width: bgWidth, height: bgHeight}).css(bgCSS);
+            }
+
         } catch(err) {
             // IE7 seems to trigger resize before the image is loaded.
             // This try/catch block is a hack to let it fail gracefully.
@@ -224,8 +235,14 @@
 
         // Vars
         var self = this
-          , oldImage = self.$wrap.find('iframe').addClass('deleteable')
-          , evtOptions = { relatedTarget: self.$container[0] };
+            , oldImage
+            , evtOptions = { relatedTarget: self.$container[0] };
+
+        if(this.options.iframe == true) {
+            oldImage = self.$wrap.find('iframe').addClass('deleteable')
+        } else {
+            oldImage = self.$wrap.find('img').addClass('deleteable')
+        }
 
         // Trigger the "before" event
         self.$container.trigger($.Event('backstretch.before', evtOptions), [self, newIndex]); 
@@ -236,8 +253,16 @@
         // Pause the slideshow
         clearInterval(self.interval);
 
+        var $element;
+        if(this.options.iframe == true) {
+          $element = $('<iframe />');
+        } else {
+          $element = $('<img />');
+        }
+
+
         // New image
-        self.$img = $('<iframe />')
+        self.$img = $element
                       .css(styles.img)
                       .bind('load', function (e) {
                         var imgWidth = this.width || $(e.target).width()
@@ -270,7 +295,6 @@
 
         // Hack for IE img onload event
         self.$img.attr('src', self.images[newIndex]);
-       
         return self;
       }
 

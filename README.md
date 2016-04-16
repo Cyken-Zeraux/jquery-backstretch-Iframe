@@ -36,7 +36,7 @@ Include the jQuery library (version 1.7 or newer) and Backstretch plugin files i
 | `centeredY` | This parameter controls whether or not we center the image on the Y axis to account for the aforementioned discrepancy. | Boolean | true |
 | `fade` | This is the speed at which the image will fade in. Integers in milliseconds are accepted, as well as standard jQuery speed strings (slow, normal, fast). | Integer or String | 0 |
 | `duration` | The amount of time in between slides, when using Backstretch as a slideshow, expressed as the number of milliseconds. | Integer | 5000 |
-| `useObject` | Whether to create an Object tag instead of an Img tag. Only 1 Object tag is supported at this time, cannot be used with slideshow. | Boolean | false |
+| `iframe` | Whether to create an Iframe element instead of an Img element. | Boolean | false |
 
 ##Example Object
 
